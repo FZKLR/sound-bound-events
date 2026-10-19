@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const apiKey = process.env.STRIPE_SECRET_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'STRIPE_SECRET_KEY is missing in your .env.local file' },
+        { error: 'STRIPE_SECRET_KEY is missing' },
         { status: 500 }
       );
     }
@@ -24,7 +24,6 @@ export async function POST(req: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       customer_email: customerEmail || undefined,
       line_items: [
         {
@@ -34,7 +33,7 @@ export async function POST(req: Request) {
               name: `${eventTitle || 'Sound Bound Event'} - ${tierName || 'Pass'}`,
               description: `Entry pass for ${customerName || 'Guest'}`,
             },
-            unit_amount: Math.round(Number(price) * 100), // Converted to fils (AED cents)
+            unit_amount: Math.round(Number(price) * 100),
           },
           quantity: Number(quantity),
         },
