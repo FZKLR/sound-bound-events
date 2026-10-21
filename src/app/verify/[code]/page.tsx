@@ -5,20 +5,20 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle2, XCircle, AlertCircle, ShieldCheck, Loader2 } from 'lucide-react';
 
-type Order = {
+type VerifiedOrder = {
   id: string;
   payment_status: string;
-  customer_name: string;
-  customer_email: string;
-  total_amount: number;
-  ticket_tiers: { name: string | null } | null;
+  ticket_tiers: { name: string } | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  total_amount: number | string;
 };
 
 function VerificationContent() {
   const params = useParams();
   const ticketCode = params?.code as string;
 
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<VerifiedOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkingIn, setCheckingIn] = useState(false);
@@ -55,13 +55,18 @@ function VerificationContent() {
     setCheckingIn(true);
 
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ payment_status: 'checked_in' })
-        .eq('id', order.id);
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.id }),
+      });
 
-      if (!error) {
+      const result = await res.json();
+
+      if (result.success) {
         setIsCheckedIn(true);
+      } else {
+        alert(result.error || 'Failed to update check-in status');
       }
     } catch (e) {
       alert('Error updating check-in status');
