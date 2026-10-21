@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     const stripe = new Stripe(apiKey, {
-      apiVersion: '2023-10-16' as any,
+      apiVersion: '2026-09-30.endive',
     });
 
     const { tierId, tierName, price, quantity, eventTitle, customerName, customerEmail } = await req.json();
@@ -21,7 +21,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid quantity or price' }, { status: 400 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sound-bound-events.netlify.app';
+    const baseUrl = rawBaseUrl.replace(/\/+$/, ''); // Automatically removes any trailing slashes
 
     const session = await stripe.checkout.sessions.create({
       customer_email: customerEmail || undefined,
@@ -50,8 +51,11 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Stripe Checkout Error:', error);
-    return NextResponse.json({ error: error.message || 'Stripe error' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Stripe error' },
+      { status: 500 }
+    );
   }
 }
