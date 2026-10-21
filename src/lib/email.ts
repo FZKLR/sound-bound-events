@@ -21,18 +21,22 @@ export async function sendTicketEmail({
 }: SendTicketEmailParams) {
   try {
     if (!process.env.RESEND_API_KEY) {
-      console.warn('RESEND_API_KEY is not set.');
+      console.warn('RESEND_API_KEY is missing.');
       return;
     }
 
-    // Public HTTPS QR image URL that renders reliably across Gmail, Apple Mail, and Outlook
     const cleanCode = ticketCode.replace(/[^a-zA-Z0-9-]/g, '');
-    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cleanCode)}&color=000000&bgcolor=FFFFFF`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/+$/, '') || 'https://sound-bound-events.netlify.app';
 
+    // 1. The QR Code links to the live verification page
+    const verifyUrl = `${baseUrl}/verify/${cleanCode}`;
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(verifyUrl)}&color=000000&bgcolor=FFFFFF`;
+
+    // 2. Dispatch branded email
     await resend.emails.send({
       from: 'Sound Bound Events <onboarding@resend.dev>',
       to: customerEmail,
-      subject: `Your Admission Pass: ${eventTitle}`,
+      subject: `Admission Pass: ${eventTitle} (${cleanCode.slice(-6).toUpperCase()})`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -42,7 +46,7 @@ export async function sendTicketEmail({
             body { background-color: #050505; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; margin: 0; }
             .card { background-color: #0E0E0E; border: 1px solid #222222; border-radius: 20px; padding: 28px; max-width: 480px; margin: 0 auto; text-align: center; }
             .badge { display: inline-block; background-color: rgba(0, 255, 102, 0.15); color: #00FF66; padding: 6px 14px; border-radius: 30px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
-            .title { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 18px 0 12px 0; color: #ffffff; letter-spacing: -0.5px; }
+            .title { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 18px 0 12px 0; color: #ffffff; }
             .info-box { background-color: #141414; border: 1px solid #242424; border-radius: 12px; padding: 16px; margin: 20px 0; text-align: left; font-size: 13px; line-height: 1.6; color: #cccccc; }
             .qr-wrapper { background-color: #ffffff; padding: 16px; border-radius: 14px; display: inline-block; margin: 15px 0 10px 0; }
             .qr-img { display: block; width: 180px; height: 180px; }
@@ -67,7 +71,7 @@ export async function sendTicketEmail({
                 <img src="${qrImageUrl}" alt="Scan QR Code" class="qr-img" />
               </div>
               <div class="code-text">PASS ID: ${cleanCode.slice(-8).toUpperCase()}</div>
-              <p style="color: #888888; font-size: 11px; margin-top: 6px;">Present this scannable QR code at the door for entry.</p>
+              <p style="color: #888888; font-size: 11px; margin-top: 6px;">Scan this QR code at the door for entry.</p>
             </div>
 
             <div class="footer">
@@ -79,8 +83,8 @@ export async function sendTicketEmail({
       `,
     });
 
-    console.log(`Email dispatched to ${customerEmail} with QR pass.`);
+    console.log(`Dispatched verified QR ticket to ${customerEmail}`);
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error('Email error:', error);
   }
 }
