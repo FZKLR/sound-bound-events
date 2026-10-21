@@ -1,25 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { CheckCircle2, XCircle, AlertCircle, ShieldCheck, User, Calendar, MapPin, Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import { CheckCircle2, XCircle, AlertCircle, ShieldCheck, Loader2 } from 'lucide-react';
 
-type TicketOrder = {
+type Order = {
   id: string;
   payment_status: string;
-  customer_name: string | null;
-  customer_email: string | null;
+  customer_name: string;
+  customer_email: string;
   total_amount: number;
-  ticket_tiers: { name: string } | null;
+  ticket_tiers: { name: string | null } | null;
 };
 
-export default function TicketVerificationPage() {
+function VerificationContent() {
   const params = useParams();
-  const ticketCode = params.code as string;
+  const ticketCode = params?.code as string;
 
-  const [order, setOrder] = useState<TicketOrder | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkingIn, setCheckingIn] = useState(false);
@@ -156,5 +155,19 @@ export default function TicketVerificationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TicketVerificationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
+          <Loader2 className="w-10 h-10 animate-spin text-[#00FF66]" />
+        </div>
+      }
+    >
+      <VerificationContent />
+    </Suspense>
   );
 }
