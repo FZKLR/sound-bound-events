@@ -9,45 +9,52 @@
   }
 }
 
-/* Million-Dollar Visual FX */
+/* Rave Cyber Grid */
 .bg-grid-pattern {
-  background-size: 50px 50px;
+  background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
 }
 
-.glow-mesh {
-  background: radial-gradient(circle at 50% 30%, rgba(0, 255, 102, 0.15), transparent 70%);
-}
-
+/* High-Impact Glass Cards */
 .glass-card {
-  background: rgba(13, 13, 13, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card:hover {
-  border-color: rgba(0, 255, 102, 0.35);
-  box-shadow: 0 0 30px rgba(0, 255, 102, 0.1);
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 35px rgba(0, 255, 102, 0.15), 0 0 15px rgba(0, 240, 255, 0.1);
 }
 
-/* Radar pulse animation */
+/* Sound Radar Spins */
 @keyframes spin-slow {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+@keyframes spin-reverse {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
 .animate-spin-slow {
-  animation: spin-slow 35s linear infinite;
+  animation: spin-slow 30s linear infinite;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.05); }
+.animate-spin-reverse {
+  animation: spin-reverse 45s linear infinite;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 5s ease-in-out infinite;
+/* Live Strobe Glow Pulse */
+@keyframes strobe-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); filter: drop-shadow(0 0 20px rgba(0,255,102,0.4)); }
+  50% { opacity: 0.75; transform: scale(1.08); filter: drop-shadow(0 0 40px rgba(0,240,255,0.6)); }
+}
+
+.animate-strobe-pulse {
+  animation: strobe-pulse 4s ease-in-out infinite;
 }

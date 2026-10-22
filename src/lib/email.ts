@@ -1,6 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY || '');
+function getResendClient(): Resend {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+
+  if (!apiKey) {
+    throw new Error(
+      'Email delivery is unavailable: RESEND_API_KEY is not configured.',
+    );
+  }
+
+  return new Resend(apiKey);
+}
 
 interface SendTicketEmailParams {
   customerEmail: string;
@@ -36,7 +46,7 @@ export async function sendTicketEmail({
     // Generate QR image pointing to the full https:// link
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullVerifyUrl)}&color=000000&bgcolor=FFFFFF`;
 
-    await resend.emails.send({
+    await getResendClient().emails.send({
       from: 'Sound Bound Events <onboarding@resend.dev>',
       to: customerEmail,
       subject: `Admission Pass: ${eventTitle} (${cleanCode.slice(-6).toUpperCase()})`,

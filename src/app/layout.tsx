@@ -1,27 +1,28 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
+import AudioWaveBackground from '@/Components/AudioWaveBackground';
+import SoundPlayer from '@/Components/SoundPlayer';
 
 export const metadata: Metadata = {
-  title: "Sound Bound Events | Dubai Social Experiences",
-  description: "Curated nightlife, underground sounds, and elite club takeovers across Dubai. Get official passes and VIP table reservations.",
-  openGraph: {
-    title: "Sound Bound Events — Bound by Sound. Built for the Night.",
-    description: "Halloween Special at Rumba Club, Dubai. Book official tickets and backstage VIP passes directly.",
-    url: "https://sound-bound-events.netlify.app",
-    siteName: "Sound Bound Events",
-    locale: "en_AE",
-    type: "website",
-  },
+  title: 'SOUND BOUND | Dubai Social Experiences & Underground Events',
+  description: 'Curated nightlife takeovers, deep tech-house, and elite party spaces across Dubai. Official tickets and VIP passes.',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className="bg-[#050505] text-white antialiased">
+    <html lang="en" className="dark">
+      <body className="bg-[#030303] text-white antialiased selection:bg-[#00FF66] selection:text-black min-h-screen flex flex-col relative bg-grid-pattern">
+        {/* Global Dynamic Audio Visualizer & Particles */}
+        <AudioWaveBackground />
+        
+        {/* Global Floating Sound Player Preview */}
+        <SoundPlayer />
+
+        {/* Dynamic Page Content */}
         {children}
       </body>
     </html>

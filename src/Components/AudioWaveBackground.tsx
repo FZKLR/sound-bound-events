@@ -15,22 +15,33 @@ export default function AudioWaveBackground() {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
+    let mouseX = width / 2;
+    let mouseY = height / 2;
+
     const handleResize = () => {
       if (!canvas) return;
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     };
 
-    window.addEventListener('resize', handleResize);
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
 
-    const particles = Array.from({ length: 50 }, () => ({
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Dynamic rave dust and strobe particles
+    const particles = Array.from({ length: 65 }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      radius: Math.random() * 1.8 + 0.4,
-      speedX: (Math.random() - 0.5) * 0.5,
-      speedY: (Math.random() - 0.5) * 0.5,
-      color: Math.random() > 0.5 ? 'rgba(0, 255, 102,' : 'rgba(0, 240, 255,',
-      alpha: Math.random() * 0.6 + 0.2,
+      radius: Math.random() * 2 + 0.5,
+      speedX: (Math.random() - 0.5) * 0.8,
+      speedY: (Math.random() - 0.5) * 0.8,
+      color: Math.random() > 0.4 ? 'rgba(0, 255, 102,' : 'rgba(0, 240, 255,',
+      alpha: Math.random() * 0.7 + 0.2,
+      pulse: Math.random() * 0.05 + 0.01,
     }));
 
     let step = 0;
@@ -38,34 +49,52 @@ export default function AudioWaveBackground() {
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Neon Green Sine Wave
-      ctx.save();
-      ctx.beginPath();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(0, 255, 102, 0.25)';
-      for (let x = 0; x < width; x += 5) {
-        const y = height / 2 + Math.sin(x * 0.003 + step * 0.02) * 45 + Math.cos(x * 0.001) * 20;
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
+      // 1. Draw Rave Ambient Laser Beams
+      const laserGradient = ctx.createLinearGradient(0, 0, width, height);
+      laserGradient.addColorStop(0, 'rgba(0, 255, 102, 0.04)');
+      laserGradient.addColorStop(0.5, 'rgba(0, 240, 255, 0.03)');
+      laserGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = laserGradient;
+      ctx.fillRect(0, 0, width, height);
 
-      // Cyan / Electric Blue Sine Wave
-      ctx.beginPath();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
-      for (let x = 0; x < width; x += 5) {
-        const y = height / 2.2 + Math.sin(x * 0.0025 - step * 0.015) * 55 + Math.sin(x * 0.005) * 15;
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      // 2. High-Frequency Multi-Layer Sound Waves
+      ctx.save();
+      const waveColors = [
+        'rgba(0, 255, 102, 0.35)',
+        'rgba(0, 240, 255, 0.3)',
+        'rgba(0, 255, 102, 0.15)',
+      ];
+
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = i === 0 ? 2 : 1;
+        ctx.strokeStyle = waveColors[i];
+
+        const speed = step * (0.025 + i * 0.01);
+        const waveHeight = 45 + i * 20;
+
+        for (let x = 0; x < width; x += 4) {
+          const distanceToMouse = Math.abs(x - mouseX);
+          const mouseFactor = Math.max(0, 1 - distanceToMouse / 400) * 35;
+
+          const y =
+            height / 2 +
+            Math.sin(x * 0.0035 + speed) * (waveHeight + mouseFactor) +
+            Math.cos(x * 0.0015 - speed * 0.5) * 25;
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
       }
-      ctx.stroke();
       ctx.restore();
 
-      // Floating Particles
+      // 3. Floating Interactive Neon Strobe Particles
       particles.forEach((p) => {
         p.x += p.speedX;
         p.y += p.speedY;
+
+        p.alpha += Math.sin(step * p.pulse) * 0.02;
 
         if (p.x < 0) p.x = width;
         if (p.x > width) p.x = 0;
@@ -74,9 +103,9 @@ export default function AudioWaveBackground() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `${p.color} ${p.alpha})`;
+        ctx.fillStyle = `${p.color} ${Math.max(0.1, Math.min(0.9, p.alpha))})`;
         ctx.shadowColor = p.color.includes('255, 102') ? '#00FF66' : '#00F0FF';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 12;
         ctx.fill();
       });
 
@@ -88,9 +117,10 @@ export default function AudioWaveBackground() {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-80" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-85" />;
 }

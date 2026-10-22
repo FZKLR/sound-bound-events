@@ -1,344 +1,598 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  Disc3,
+  MapPin,
+  Minus,
+  Music2,
+  Plus,
+  Radio,
+  Ticket,
+} from 'lucide-react';
+
 import Navbar from '@/Components/Navbar';
 import Footer from '@/Components/Footer';
-import AudioWaveBackground from '@/Components/AudioWaveBackground';
-import SoundPlayer from '@/Components/SoundPlayer';
-import { supabase } from '@/lib/supabase';
-import { Calendar, MapPin, Clock, ArrowRight, ShieldCheck, Flame, Sparkles, Music, Loader2, Zap } from 'lucide-react';
 
-interface TicketTier {
-  id: string;
-  name: string;
-  price: number;
-}
+const ticketTiers = [
+  {
+    id: 'early',
+    name: 'Early Bird',
+    price: 120,
+    description: 'Illustrative advance-entry tier.',
+  },
+  {
+    id: 'general',
+    name: 'General Admission',
+    price: 180,
+    description: 'Illustrative standard-entry tier.',
+  },
+  {
+    id: 'vip',
+    name: 'VIP Admission',
+    price: 350,
+    description: 'Illustrative premium tier. Benefits to be agreed.',
+  },
+];
+
+const faqs = [
+  {
+    question: 'What is Sound Bound: Halloween?',
+    answer:
+      'A proposed Halloween party by Sound Bound, presented here as a concept for Rumba. The final event format and arrangements are still being discussed.',
+  },
+  {
+    question: 'Are the event details confirmed?',
+    answer:
+      'Not yet. The proposed date and venue shown here are part of this presentation. The lineup, timings, entry requirements, and event policies will be published once agreed.',
+  },
+  {
+    question: 'Can I buy tickets now?',
+    answer:
+      'This is a demonstration of the booking experience. Ticket names and prices are illustrative, and no payments are being accepted.',
+  },
+  {
+    question: 'Will there be VIP options or table bookings?',
+    answer:
+      'VIP options and table arrangements can be added once the packages, availability, and booking process have been agreed with the venue.',
+  },
+];
 
 export default function HomePage() {
-  const [tiers, setTiers] = useState<TicketTier[]>([
-    { id: 'early', name: 'Early Bird', price: 120 },
-    { id: 'general', name: 'General Admission', price: 180 },
-    { id: 'backstage', name: 'VIP Backstage Pass', price: 350 },
-    { id: 'table', name: 'VIP Table (6 Pax)', price: 2500 },
-  ]);
-
-  const [selectedTierId, setSelectedTierId] = useState<string>('general');
+  const [selectedTierId, setSelectedTierId] = useState('general');
   const [quantity, setQuantity] = useState(1);
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function loadTiers() {
-      const { data } = await supabase
-        .from('ticket_tiers')
-        .select('*')
-        .order('price', { ascending: true });
+  const activeTier =
+    ticketTiers.find((tier) => tier.id === selectedTierId) ??
+    ticketTiers[0];
 
-      if (data && data.length > 0) {
-        setTiers(data);
-        setSelectedTierId(data[1]?.id || data[0].id);
-      }
-    }
-    loadTiers();
-  }, []);
-
-  const activeTier = tiers.find((t) => t.id === selectedTierId) || tiers[0];
-
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customerEmail || !customerName) {
-      alert('Please fill in your name and email');
-      return;
-    }
-
-    setIsCheckingOut(true);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tierId: activeTier.id,
-          tierName: activeTier.name,
-          price: activeTier.price,
-          quantity,
-          eventTitle: 'Sound Bound: Halloween Special',
-          customerName,
-          customerEmail,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || 'Checkout initialization failed');
-      }
-    } catch (err) {
-      alert('Error initiating checkout.');
-    } finally {
-      setIsCheckingOut(false);
-    }
-  };
+  const total = activeTier.price * quantity;
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white selection:bg-[#00FF66] selection:text-black flex flex-col justify-between relative overflow-hidden bg-grid-pattern">
-      {/* 1. Interactive Dual Tone Visualizer Background */}
-      <AudioWaveBackground />
-
-      {/* 2. Floating Sound Player Widget */}
-      <SoundPlayer />
-
-      {/* 3. Global Header */}
+    <>
       <Navbar />
 
-      <main className="flex-1 relative z-10">
-        {/* 4. Hero Section with Dual Tone Cyber Glow */}
-        <section className="relative px-6 pt-24 pb-32 max-w-7xl mx-auto flex flex-col items-center text-center">
-          {/* Dual Glow Backdrops (Neon Green & Electric Cyan) */}
-          <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-[#00FF66]/15 blur-[160px] pointer-events-none rounded-full" />
-          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[350px] bg-[#00F0FF]/15 blur-[160px] pointer-events-none rounded-full" />
+      <main className="relative z-10 min-w-0 flex-1">
+        {/* PRESENTATION NOTICE */}
+        <div className="border-b border-white/10 bg-[#080B0A]/90 px-5 py-2.5 text-center">
+          <p className="text-[9px] font-medium uppercase tracking-[0.13em] text-neutral-400 sm:text-[10px]">
+            Event concept preview
+            <span className="mx-2 text-neutral-600">/</span>
+            Details subject to confirmation
+          </p>
+        </div>
 
-          {/* Sound Radar Rings */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] md:w-[750px] md:h-[750px] border border-[#00FF66]/10 rounded-full pointer-events-none animate-spin-slow" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] md:w-[550px] md:h-[550px] border border-dashed border-[#00F0FF]/20 rounded-full pointer-events-none" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] md:w-[320px] md:h-[320px] border border-[#00FF66]/30 rounded-full pointer-events-none shadow-[0_0_90px_rgba(0,255,102,0.18)]" />
+        {/* HERO */}
+        <section
+          aria-labelledby="hero-heading"
+          className="relative isolate overflow-hidden px-5 pb-20 pt-16 sm:px-6 sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24"
+        >
+          {/* Soft backlight only — no circles or radar rings */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10"
+          >
+            <div className="absolute inset-x-[12%] top-[24%] h-[240px] bg-gradient-to-r from-[#00FF66]/[0.07] via-[#00F0FF]/[0.10] to-transparent blur-[100px] sm:inset-x-[20%] sm:h-[320px]" />
 
-          {/* Badge Pill */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#00FF66]/10 text-[#00FF66] border border-[#00FF66]/30 mb-8 uppercase tracking-widest backdrop-blur-md shadow-[0_0_15px_rgba(0,255,102,0.2)]">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F0FF] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00FF66]" />
-            </span>
-            Dubai Social Experiences
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#030303]/60" />
           </div>
 
-          {/* Main Typography with Dual Gradient */}
-          <h1 className="text-6xl sm:text-7xl md:text-9xl font-black uppercase tracking-tighter leading-[0.9] max-w-5xl">
-            Bound by Sound. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00F0FF] to-[#00FF66] drop-shadow-[0_0_35px_rgba(0,240,255,0.35)]">
-              Built for the Night.
-            </span>
-          </h1>
+          <div className="relative mx-auto flex max-w-7xl flex-col items-center text-center">
+            <div className="mb-8 inline-flex items-center gap-2.5 border border-white/10 bg-black/30 px-4 py-2 backdrop-blur-sm sm:mb-10">
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 rounded-full bg-[#00FF66]"
+              />
 
-          <p className="mt-8 text-neutral-400 max-w-xl text-base sm:text-lg leading-relaxed font-medium">
-            Immersive nightlife takeovers built on deep tech-house, hypnotic sound design, and elite Dubai party spaces.
-          </p>
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-300 sm:text-xs">
+                Sound Bound Presents / Halloween
+              </span>
+            </div>
 
-          {/* CTA Buttons */}
-          <div className="mt-10 flex flex-col sm:flex-row gap-5 items-center">
-            <a
-              href="#tickets"
-              className="px-9 py-4 bg-gradient-to-r from-[#00FF66] to-[#00F0FF] text-black font-black uppercase tracking-wider rounded-xl shadow-[0_0_30px_rgba(0,255,102,0.45)] hover:scale-105 transition-all transform flex items-center gap-2.5 text-sm"
+            <h1
+              id="hero-heading"
+              className="w-full max-w-6xl text-[clamp(2.8rem,8.5vw,7.5rem)] font-black uppercase leading-[0.94] tracking-[-0.065em]"
             >
-              Get Tickets <ArrowRight className="w-4 h-4" />
-            </a>
-            <Link
-              href="/about"
-              className="px-9 py-4 bg-[#0D0D0D]/80 backdrop-blur-md border border-[#222222] hover:border-[#00F0FF]/50 text-neutral-200 font-bold uppercase tracking-wider rounded-xl transition text-sm"
-            >
-              Our Story
-            </Link>
+              <span className="block text-white">
+                Bound by Sound.
+              </span>
+
+              <span className="mt-2 block bg-gradient-to-r from-[#B8FFF0] via-[#00F0FF] to-[#00FF66] bg-clip-text text-transparent sm:mt-3">
+                Built for the Night.
+              </span>
+            </h1>
+
+            <p className="mt-7 max-w-xl text-sm leading-relaxed text-neutral-400 sm:mt-8 sm:text-lg">
+              This Halloween, step into the sound.
+              A night of music, movement, and after-dark energy—
+              imagined for Rumba, Dubai.
+            </p>
+
+            <div className="mt-9 flex w-full max-w-sm flex-col gap-3 sm:mt-10 sm:w-auto sm:max-w-none sm:flex-row sm:gap-4">
+              <a
+                href="#events"
+                className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#00FF66] px-7 py-4 text-xs font-black uppercase tracking-[0.12em] text-black transition-colors hover:bg-[#6FFFAB] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00FF66]"
+              >
+                Explore Halloween
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </a>
+
+              <a
+                href="#tickets"
+                className="inline-flex min-h-12 items-center justify-center gap-3 border border-white/20 bg-black/20 px-7 py-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition-colors hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00F0FF]"
+              >
+                Preview Passes
+                <Ticket aria-hidden="true" className="h-4 w-4" />
+              </a>
+            </div>
+
+            <div className="mt-14 flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.22em] text-neutral-500 sm:mt-20">
+              <span aria-hidden="true" className="h-px w-8 bg-white/15" />
+              Halloween / Rumba / Dubai
+              <span aria-hidden="true" className="h-px w-8 bg-white/15" />
+            </div>
           </div>
         </section>
 
-        {/* 5. Festival Marquee Ticker */}
-        <div className="w-full border-y border-[#1A1A1A] bg-[#080808]/80 backdrop-blur-md py-4 overflow-hidden mb-16">
-          <div className="flex gap-12 whitespace-nowrap text-xs font-black uppercase tracking-widest text-neutral-400 animate-pulse">
-            <span className="flex items-center gap-2 text-[#00FF66]"><Zap className="w-3.5 h-3.5 fill-[#00FF66]" /> Halloween Takeover @ Rumba Club</span>
-            <span className="flex items-center gap-2 text-[#00F0FF]"><Music className="w-3.5 h-3.5" /> Tech House • Minimal • Deep Grooves</span>
-            <span className="flex items-center gap-2 text-white"><Flame className="w-3.5 h-3.5 text-[#00FF66]" /> Oct 31, 2026 • Dubai UAE</span>
-            <span className="flex items-center gap-2 text-[#00FF66]"><Sparkles className="w-3.5 h-3.5" /> VIP Backstage Tables Available</span>
+        {/* BRAND STRIP */}
+        <div className="border-y border-white/10 bg-black/35">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            {[
+              { label: 'Sound First', Icon: Music2 },
+              { label: 'Halloween Energy', Icon: Radio },
+              { label: 'After Dark', Icon: Disc3 },
+            ].map(({ label, Icon }) => (
+              <div
+                key={label}
+                className="flex items-center justify-center gap-3 px-5 py-4 sm:py-5"
+              >
+                <Icon
+                  aria-hidden="true"
+                  className="h-4 w-4 text-[#00FF66]"
+                />
+
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-300 sm:text-xs">
+                  {label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* 6. Featured Event Showcase */}
-        <section id="events" className="px-6 py-8 max-w-6xl mx-auto">
-          <div className="relative rounded-3xl glass-card p-8 md:p-12 overflow-hidden shadow-2xl transition-all border border-[#1A1A1A] hover:border-[#00F0FF]/40">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-b from-[#00F0FF]/15 to-[#00FF66]/10 blur-[100px] pointer-events-none" />
+        {/* FEATURED HALLOWEEN EVENT */}
+        <section
+          id="events"
+          aria-labelledby="events-heading"
+          className="scroll-mt-24 px-5 py-16 sm:px-6 sm:py-24"
+        >
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-8 flex flex-col justify-between gap-5 sm:mb-10 sm:flex-row sm:items-end">
+              <div>
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.24em] text-[#00FF66] sm:text-xs">
+                  01 / The Halloween Edition
+                </p>
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
-              <div className="space-y-3">
-                <span className="px-3 py-1 rounded-full bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-black uppercase tracking-widest border border-[#00F0FF]/30">
-                  Upcoming Edition
-                </span>
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">Sound Bound: Halloween Special</h2>
-                
-                <div className="flex flex-wrap gap-6 pt-2 text-sm text-neutral-300">
-                  <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-[#00FF66]" /> Saturday, Oct 31, 2026</span>
-                  <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-[#00F0FF]" /> 10:00 PM – Late</span>
-                  <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#00FF66]" /> Rumba Club, Dubai</span>
-                </div>
+                <h2
+                  id="events-heading"
+                  className="text-3xl font-black uppercase leading-tight tracking-tight sm:text-5xl"
+                >
+                  A Night Out of the Ordinary.
+                </h2>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3.5 shrink-0">
-                <Link
-                  href="/events/halloween-rumba-dubai"
-                  className="px-6 py-4 bg-[#141414] border border-[#2A2A2A] hover:border-[#00F0FF]/50 text-white font-bold uppercase tracking-wider rounded-xl transition text-center text-xs"
-                >
-                  Event Details
-                </Link>
-                <a
-                  href="#tickets"
-                  className="px-8 py-4 bg-gradient-to-r from-[#00FF66] to-[#00F0FF] text-black font-black uppercase tracking-wider rounded-xl transition text-center text-xs shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:opacity-90"
-                >
-                  Book Passes
-                </a>
+              <Link
+                href="/about"
+                className="inline-flex min-h-11 items-center gap-2 self-start text-xs font-bold uppercase tracking-wider text-neutral-300 transition-colors hover:text-[#00FF66] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00FF66]"
+              >
+                Meet Sound Bound
+                <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="relative overflow-hidden border border-white/15 bg-[#080B0A]/90">
+              <div
+                aria-hidden="true"
+                className="absolute inset-y-0 left-0 w-1 bg-[#00FF66]"
+              />
+
+              <div className="grid gap-10 p-7 sm:p-10 lg:grid-cols-[1.3fr_1fr] lg:gap-16 lg:p-14">
+                <div>
+                  <span className="inline-flex border border-[#00FF66]/25 bg-[#00FF66]/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#00FF66]">
+                    Proposed Event
+                  </span>
+
+                  <h3 className="mt-6 text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em] sm:text-6xl">
+                    Sound Bound:
+                    <br />
+                    <span className="text-[#00FF66]">
+                      Halloween.
+                    </span>
+                  </h3>
+
+                  <p className="mt-6 max-w-lg text-sm leading-relaxed text-neutral-400 sm:text-base">
+                    The concept: bring Sound Bound’s party energy
+                    to Rumba for a Halloween edition built around
+                    music, atmosphere, and a connected dance floor.
+                  </p>
+
+                  <div className="mt-7 flex flex-wrap gap-2">
+                    {['Halloween Edition', 'Music & Movement', 'Dubai'].map(
+                      (label) => (
+                        <span
+                          key={label}
+                          className="border border-white/10 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.14em] text-neutral-400"
+                        >
+                          {label}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-center border-t border-white/10 pt-7 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+                  <dl className="divide-y divide-white/10 text-sm">
+                    <div className="flex items-start gap-4 pb-5">
+                      <CalendarDays
+                        aria-hidden="true"
+                        className="mt-0.5 h-5 w-5 shrink-0 text-[#00FF66]"
+                      />
+
+                      <div>
+                        <dt className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                          Proposed Date
+                        </dt>
+
+                        <dd className="mt-1.5 font-medium text-neutral-200">
+                          31 October 2026
+                        </dd>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4 py-5">
+                      <MapPin
+                        aria-hidden="true"
+                        className="mt-0.5 h-5 w-5 shrink-0 text-[#00F0FF]"
+                      />
+
+                      <div>
+                        <dt className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                          Proposed Venue
+                        </dt>
+
+                        <dd className="mt-1.5 font-medium text-neutral-200">
+                          Rumba, Dubai
+                        </dd>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4 py-5">
+                      <Music2
+                        aria-hidden="true"
+                        className="mt-0.5 h-5 w-5 shrink-0 text-[#00FF66]"
+                      />
+
+                      <div>
+                        <dt className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                          Lineup & Timings
+                        </dt>
+
+                        <dd className="mt-1.5 font-medium text-neutral-200">
+                          To be announced
+                        </dd>
+                      </div>
+                    </div>
+                  </dl>
+
+                  <a
+                    href="#tickets"
+                    className="mt-3 inline-flex min-h-12 items-center justify-center gap-3 bg-[#00FF66] px-5 py-4 text-xs font-black uppercase tracking-wider text-black transition-colors hover:bg-[#6FFFAB] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00FF66]"
+                  >
+                    Explore Passes
+                    <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  </a>
+
+                  <p className="mt-4 text-xs leading-relaxed text-neutral-500">
+                    Presentation concept. Date and venue subject
+                    to agreement.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 7. Direct Ticket Purchase Grid */}
-        <section id="tickets" className="px-6 py-20 max-w-6xl mx-auto">
-          <div className="text-center mb-16 space-y-3">
-            <span className="text-xs uppercase tracking-widest text-[#00F0FF] font-black">Official Reservation</span>
-            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">Select Passes</h2>
-            <p className="text-neutral-400 text-sm">Instant digital ticket delivery with QR code check-in.</p>
-          </div>
+        {/* INTERACTIVE TICKET PREVIEW */}
+        <section
+          id="tickets"
+          aria-labelledby="tickets-heading"
+          className="scroll-mt-24 px-5 pb-16 sm:px-6 sm:pb-24"
+        >
+          <div className="mx-auto max-w-6xl border-t border-white/10 pt-10 sm:pt-12">
+            <div className="mb-8 sm:mb-10">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.24em] text-[#00F0FF] sm:text-xs">
+                02 / Your Way In
+              </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Tiers List */}
-            <div className="lg:col-span-7 space-y-4">
-              {tiers.map((tier) => {
-                const active = selectedTierId === tier.id;
+              <h2
+                id="tickets-heading"
+                className="text-3xl font-black uppercase tracking-tight sm:text-5xl"
+              >
+                Choose Your Night.
+              </h2>
+
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-neutral-400">
+                Explore the proposed booking experience.
+                Pass names, prices, and inclusions below are
+                illustrative and will be finalized before sales open.
+              </p>
+            </div>
+
+            <div className="grid items-start gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-8">
+              <fieldset className="min-w-0 space-y-3">
+                <legend className="sr-only">
+                  Select an illustrative ticket tier
+                </legend>
+
+                {ticketTiers.map((tier) => {
+                  const selected = selectedTierId === tier.id;
+
+                  return (
+                    <label
+                      key={tier.id}
+                      className={`relative flex cursor-pointer items-center justify-between gap-4 border p-5 transition-colors sm:p-6 ${
+                        selected
+                          ? 'border-[#00FF66]/70 bg-[#00FF66]/[0.06]'
+                          : 'border-white/10 bg-black/35 hover:border-white/30'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="ticket-tier"
+                        value={tier.id}
+                        checked={selected}
+                        onChange={() => setSelectedTierId(tier.id)}
+                        className="peer sr-only"
+                      />
+
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-[#00FF66]"
+                      />
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-3">
+                          <span
+                            aria-hidden="true"
+                            className={`flex h-4 w-4 shrink-0 items-center justify-center border ${
+                              selected
+                                ? 'border-[#00FF66] bg-[#00FF66] text-black'
+                                : 'border-neutral-600'
+                            }`}
+                          >
+                            {selected && <Check className="h-3 w-3" />}
+                          </span>
+
+                          <span className="text-sm font-black uppercase tracking-wide sm:text-lg">
+                            {tier.name}
+                          </span>
+                        </div>
+
+                        <p className="mt-2 text-xs leading-relaxed text-neutral-400">
+                          {tier.description}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 text-right">
+                        <span
+                          className={`text-2xl font-black tracking-tight sm:text-3xl ${
+                            selected ? 'text-[#00FF66]' : 'text-white'
+                          }`}
+                        >
+                          {tier.price}
+                        </span>
+
+                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                          AED / Example
+                        </span>
+                      </div>
+                    </label>
+                  );
+                })}
+              </fieldset>
+
+              <div className="border border-white/15 bg-[#080B0A]/95 p-6 sm:p-8">
+                <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-neutral-300">
+                    Your Night
+                  </h3>
+
+                  <span className="border border-[#00F0FF]/25 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-[#00F0FF]">
+                    Demo
+                  </span>
+                </div>
+
+                <p className="mt-6 text-xs text-neutral-500">
+                  Sound Bound: Halloween
+                </p>
+
+                <p className="mt-2 text-xl font-black uppercase tracking-tight">
+                  {activeTier.name}
+                </p>
+
+                <div className="mt-7 flex items-center justify-between gap-4">
+                  <span className="text-sm text-neutral-400">
+                    Guests
+                  </span>
+
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      aria-label="Decrease guest quantity"
+                      disabled={quantity === 1}
+                      onClick={() =>
+                        setQuantity((current) => Math.max(1, current - 1))
+                      }
+                      className="flex h-11 w-11 items-center justify-center border border-white/15 text-white transition-colors hover:border-[#00FF66]/60 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00FF66]"
+                    >
+                      <Minus aria-hidden="true" className="h-4 w-4" />
+                    </button>
+
+                    <span
+                      aria-live="polite"
+                      className="min-w-5 text-center text-sm font-bold"
+                    >
+                      {quantity}
+                    </span>
+
+                    <button
+                      type="button"
+                      aria-label="Increase guest quantity"
+                      disabled={quantity === 10}
+                      onClick={() =>
+                        setQuantity((current) => Math.min(10, current + 1))
+                      }
+                      className="flex h-11 w-11 items-center justify-center border border-white/15 text-white transition-colors hover:border-[#00FF66]/60 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00FF66]"
+                    >
+                      <Plus aria-hidden="true" className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-7 flex items-end justify-between gap-4 border-t border-white/10 pt-6">
+                  <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                    Example Total
+                  </span>
+
+                  <p aria-live="polite" className="text-right">
+                    <span className="text-3xl font-black tracking-tight text-[#00FF66]">
+                      {total.toLocaleString('en-US')}
+                    </span>
+
+                    <span className="ml-2 text-xs font-bold text-neutral-400">
+                      AED
+                    </span>
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled
+                  aria-describedby="checkout-preview-note"
+                  className="mt-7 flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-3 bg-[#00FF66]/70 px-5 py-4 text-xs font-black uppercase tracking-wider text-black"
+                >
+                  Checkout Preview
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </button>
+
+                <p
+                  id="checkout-preview-note"
+                  className="mt-4 text-center text-xs leading-relaxed text-neutral-500"
+                >
+                  Demonstration only. No payment will be taken.
+                  Final pricing and packages are still to be agreed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section
+          aria-labelledby="faq-heading"
+          className="px-5 pb-20 sm:px-6 sm:pb-28"
+        >
+          <div className="mx-auto grid max-w-6xl gap-8 border-t border-white/10 pt-10 sm:pt-12 md:grid-cols-[1fr_1.2fr] md:gap-16">
+            <div>
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.24em] text-[#00FF66] sm:text-xs">
+                03 / Need to Know
+              </p>
+
+              <h2
+                id="faq-heading"
+                className="text-3xl font-black uppercase tracking-tight sm:text-4xl"
+              >
+                Before the Night.
+              </h2>
+            </div>
+
+            <div className="border-t border-white/10">
+              {faqs.map((faq, index) => {
+                const isOpen = openFaq === index;
+                const buttonId = `faq-button-${index}`;
+                const panelId = `faq-panel-${index}`;
+
                 return (
                   <div
-                    key={tier.id}
-                    onClick={() => setSelectedTierId(tier.id)}
-                    className={`p-6 rounded-2xl border transition-all cursor-pointer flex justify-between items-center ${
-                      active
-                        ? 'border-[#00F0FF] bg-gradient-to-r from-[#00FF66]/10 to-[#00F0FF]/10 shadow-[0_0_30px_rgba(0,240,255,0.2)] scale-[1.01]'
-                        : 'border-[#1C1C1C] bg-[#0D0D0D]/70 backdrop-blur-md hover:border-[#333]'
-                    }`}
+                    key={faq.question}
+                    className="border-b border-white/10"
                   >
-                    <div className="space-y-1">
-                      <h4 className="font-black text-lg uppercase tracking-wide">{tier.name}</h4>
-                      <p className="text-xs text-neutral-400">Official venue admission & instant mobile pass.</p>
-                    </div>
+                    <h3>
+                      <button
+                        id={buttonId}
+                        type="button"
+                        aria-expanded={isOpen}
+                        aria-controls={panelId}
+                        onClick={() =>
+                          setOpenFaq(isOpen ? null : index)
+                        }
+                        className="flex min-h-16 w-full items-center justify-between gap-5 py-5 text-left text-sm font-semibold leading-relaxed text-neutral-200 transition-colors hover:text-[#00FF66] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00FF66] sm:text-base"
+                      >
+                        <span>{faq.question}</span>
 
-                    <div className="text-right shrink-0 ml-4">
-                      <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00FF66] to-[#00F0FF]">
-                        {tier.price} <span className="text-xs font-bold text-neutral-400">AED</span>
-                      </span>
+                        <ChevronDown
+                          aria-hidden="true"
+                          className={`h-4 w-4 shrink-0 text-[#00FF66] transition-transform duration-200 motion-reduce:transition-none ${
+                            isOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                    </h3>
+
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={buttonId}
+                      hidden={!isOpen}
+                      className="pb-6 pr-6 text-sm leading-relaxed text-neutral-400"
+                    >
+                      {faq.answer}
                     </div>
                   </div>
                 );
               })}
-            </div>
-
-            {/* Checkout Form */}
-            <div className="lg:col-span-5 glass-card rounded-3xl p-6 sm:p-8 sticky top-28 border border-[#1A1A1A]">
-              <h3 className="text-xs uppercase tracking-widest text-neutral-400 font-bold mb-6">Reservation Summary</h3>
-
-              <form onSubmit={handleCheckout} className="space-y-4">
-                <div className="p-4 rounded-xl bg-[#141414]/90 border border-[#222]">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold text-sm uppercase">{activeTier?.name}</span>
-                    <span className="text-[#00F0FF] font-black text-lg">{activeTier?.price} AED</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs text-neutral-400 mt-4 pt-3 border-t border-[#222]">
-                    <span>Pass Quantity</span>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#333] flex items-center justify-center font-bold text-white transition text-sm"
-                      >
-                        -
-                      </button>
-                      <span className="text-white font-black text-sm">{quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#333] flex items-center justify-center font-bold text-white transition text-sm"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-neutral-400 mb-1.5 font-bold">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Alex Smith"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-[#141414]/80 border border-[#242424] text-white focus:outline-none focus:border-[#00F0FF] text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-neutral-400 mb-1.5 font-bold">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. alex@example.com"
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-[#141414]/80 border border-[#242424] text-white focus:outline-none focus:border-[#00F0FF] text-sm"
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-[#222]">
-                  <div className="flex justify-between items-center mb-5">
-                    <span className="text-xs font-bold uppercase text-neutral-400">Total</span>
-                    <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00FF66] to-[#00F0FF]">
-                      {(activeTier?.price || 0) * quantity} AED
-                    </span>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isCheckingOut}
-                    className="w-full py-4 bg-gradient-to-r from-[#00FF66] to-[#00F0FF] text-black font-black uppercase tracking-wider rounded-xl shadow-[0_0_25px_rgba(0,240,255,0.45)] hover:opacity-95 transition active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
-                  >
-                    {isCheckingOut ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Redirecting to Stripe...
-                      </>
-                    ) : (
-                      'Proceed to Payment'
-                    )}
-                  </button>
-
-                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-500 mt-4">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#00F0FF]" /> Official Sound Bound Ticket Verification
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        {/* 8. Brand Pillars */}
-        <section id="about" className="px-6 py-24 border-t border-[#141414] max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-3xl glass-card transition-all border border-[#1A1A1A] hover:border-[#00F0FF]/40">
-              <Music className="w-8 h-8 text-[#00F0FF] mb-4" />
-              <h3 className="text-xl font-black uppercase mb-2">Curated Sounds</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed">High-energy tech-house, minimal grooves, and underground rhythms from top DJs.</p>
-            </div>
-            <div className="p-8 rounded-3xl glass-card transition-all border border-[#1A1A1A] hover:border-[#00FF66]/40">
-              <Flame className="w-8 h-8 text-[#00FF66] mb-4" />
-              <h3 className="text-xl font-black uppercase mb-2">Elite Venues</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed">Curated club takeovers across Dubai with custom lighting and sound production.</p>
-            </div>
-            <div className="p-8 rounded-3xl glass-card transition-all border border-[#1A1A1A] hover:border-[#00F0FF]/40">
-              <ShieldCheck className="w-8 h-8 text-[#00F0FF] mb-4" />
-              <h3 className="text-xl font-black uppercase mb-2">Seamless Entry</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed">Direct digital check-in with verified QR passes sent immediately to your phone.</p>
             </div>
           </div>
         </section>
       </main>
 
       <Footer />
-    </div>
+    </>
   );
 }

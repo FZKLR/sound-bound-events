@@ -1,56 +1,54 @@
 import Navbar from '@/Components/Navbar';
 import Footer from '@/Components/Footer';
-import { Music, Flame, Sparkles, ShieldCheck } from 'lucide-react';
+import { Music, Flame, Sparkles, Disc3 } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col">
+    <>
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-20 w-full space-y-20">
-        {/* Header */}
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-20 w-full space-y-20 relative z-10">
         <div className="text-center max-w-3xl mx-auto space-y-6">
-          <span className="text-xs uppercase tracking-widest text-[#00FF66] font-bold">Our Philosophy</span>
+          <span className="text-xs uppercase tracking-widest text-[#00F0FF] font-black">Our Ethos</span>
           <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tight">
             Bound by Sound. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00FF66]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00F0FF] to-[#00FF66]">
               Built for the Night.
             </span>
           </h1>
-          <p className="text-neutral-400 text-base md:text-lg leading-relaxed">
-            Sound Bound Events is a Dubai-born nightlife collective founded on one principle: delivering uncompromised underground music culture, electric social energy, and premier venue production.
+          <p className="text-neutral-400 text-base md:text-lg leading-relaxed font-medium">
+            Sound Bound Events is a Dubai-born nightlife collective founded on one uncompromising principle: delivering pure underground soundscapes, immersive social energy, and elite venue production.
           </p>
         </div>
 
-        {/* Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-8 rounded-3xl bg-[#0D0D0D] border border-[#1A1A1A] space-y-4">
+          <div className="p-8 rounded-3xl glass-card space-y-4 border border-[#1A1A1A] hover:border-[#00FF66]/40 transition-all">
             <Music className="w-8 h-8 text-[#00FF66]" />
-            <h3 className="text-xl font-black uppercase">Pure Sound Curation</h3>
+            <h3 className="text-xl font-black uppercase">Pure Sound Policy</h3>
             <p className="text-sm text-neutral-400 leading-relaxed">
-              We skip generic commercial sets in favor of deep tech, minimal house, and infectious underground rhythms curated by top talent.
+              We bypass generic commercial playlists in favor of deep tech, minimal house, and hypnotic groove-driven sets curated by leading local and international talent.
             </p>
           </div>
 
-          <div className="p-8 rounded-3xl bg-[#0D0D0D] border border-[#1A1A1A] space-y-4">
-            <Flame className="w-8 h-8 text-[#00FF66]" />
-            <h3 className="text-xl font-black uppercase">Venue Takeovers</h3>
+          <div className="p-8 rounded-3xl glass-card space-y-4 border border-[#1A1A1A] hover:border-[#00F0FF]/40 transition-all">
+            <Flame className="w-8 h-8 text-[#00F0FF]" />
+            <h3 className="text-xl font-black uppercase">Venue Transformations</h3>
             <p className="text-sm text-neutral-400 leading-relaxed">
-              From iconic beach clubs to underground lounges and warehouse spaces, every venue is transformed with custom green lighting and sound.
+              From intimate club takeovers to warehouse spaces, every event features bespoke lighting rigs, synchronized lasers, and heavy bass production.
             </p>
           </div>
 
-          <div className="p-8 rounded-3xl bg-[#0D0D0D] border border-[#1A1A1A] space-y-4">
-            <Sparkles className="w-8 h-8 text-[#00FF66]" />
-            <h3 className="text-xl font-black uppercase">Community First</h3>
+          <div className="p-8 rounded-3xl glass-card space-y-4 border border-[#1A1A1A] hover:border-[#00FF66]/40 transition-all">
+            <Disc3 className="w-8 h-8 text-[#00FF66]" />
+            <h3 className="text-xl font-black uppercase">Curated Movement</h3>
             <p className="text-sm text-neutral-400 leading-relaxed">
-              A curated community of music enthusiasts, tastemakers, and partygoers connected by a shared passion for high-energy nights.
+              A community of music lovers, night owls, and tastemakers connected under a shared passion for high-energy underground gatherings.
             </p>
           </div>
         </div>
       </main>
 
       <Footer />
-    </div>
+    </>
   );
 }
